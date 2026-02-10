@@ -2,9 +2,11 @@ export type RiskLevel = 'SAFE' | 'WARNING' | 'CRITICAL' | 'HALLUCINATION';
 
 export interface Message {
   id: string;
-  sender: 'user' | 'bot';
+  role: 'user' | 'assistant';
+  sender: 'user' | 'bot'; // Backward compatibility
   content: string;
   timestamp: Date;
+  createdAt?: Date; // Used by Vercel AI SDK
   riskFlags?: {
     sentiment?: 'negative' | 'neutral' | 'positive';
     hallucination?: boolean;
@@ -20,6 +22,7 @@ export interface Chat {
   riskLevel: RiskLevel;
   messages: Message[];
   lastUpdated: Date;
+  isLive?: boolean; // Flag to distinguish real vs simulated chats
 }
 
 export interface EvaluationResult {
