@@ -69,7 +69,11 @@ export const useChatStore = create<ChatStore>((set) => ({
     })),
 
   createLiveChat: (userName) => {
-    const chatId = `live-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`;
+    // Use crypto.randomUUID for better uniqueness
+    const randomId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2, 11);
+    const chatId = `live-${Date.now()}-${randomId}`;
     const newChat: Chat = {
       id: chatId,
       userId: `user-${Date.now()}`,

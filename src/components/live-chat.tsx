@@ -24,10 +24,20 @@ export function LiveChat({ chatId, userName, onRiskDetected }: LiveChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
     api: '/api/chat',
-    onFinish: (message) => {
-      // Get the last user message (the one before the AI response)
-      const userMessages = messages.filter(m => m.role === 'user');
-      const lastUserMessage = userMessages[userMessages.length - 1];
+    onFinish: (message, { finishReason, usage }) => {
+      // The messages array is updated by the time onFinish is called
+      // Get all user messages and find the last one before this assistant message
+      const currentMessages = messages;
+      const assistantIndex = currentMessages.findIndex(m => m.id === message.id);
+      
+      // Find the user message immediately before this assistant message
+      let lastUserMessage = null;
+      for (let i = assistantIndex - 1; i >= 0; i--) {
+        if (currentMessages[i].role === 'user') {
+          lastUserMessage = currentMessages[i];
+          break;
+        }
+      }
       
       if (lastUserMessage) {
         // Evaluate the AI response using the supervisor engine
