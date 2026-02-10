@@ -5,7 +5,7 @@ Real-time monitoring dashboard for AI chatbot conversations with automatic detec
 ## Features
 
 - **Real-time Chat Monitoring**: View all active conversations in a clean, organized interface
-- **Live AI Conversations**: Chat with real OpenAI GPT-4o in real-time via Vercel AI SDK
+- **Live AI Conversations**: Chat with real Google Gemini AI in real-time via Vercel AI SDK
 - **Sentiment Analysis**: Automatically detect user frustration using negative keyword detection
 - **Hallucination Detection**: Compare bot responses against a knowledge base to catch incorrect information
 - **Risk Classification**: Conversations are categorized as Safe, Warning, Critical, or Hallucination
@@ -16,7 +16,7 @@ Real-time monitoring dashboard for AI chatbot conversations with automatic detec
 
 - **Framework**: Next.js 16 with App Router
 - **Language**: TypeScript
-- **AI**: Vercel AI SDK with OpenAI GPT-4o
+- **AI**: Vercel AI SDK with Google Gemini 1.5 Flash
 - **Styling**: Tailwind CSS
 - **Icons**: Lucide React
 - **State Management**: Zustand
@@ -34,16 +34,21 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```bash
-OPENAI_API_KEY=sk-proj-your-key-here
+GOOGLE_GENERATIVE_AI_API_KEY=your-google-api-key-here
 ```
 
-#### How to Get an OpenAI API Key
+#### How to Get a Google Gemini API Key (FREE)
 
-1. Visit [OpenAI Platform](https://platform.openai.com/)
-2. Sign up or log in to your account
-3. Navigate to [API Keys](https://platform.openai.com/api-keys)
-4. Click "Create new secret key"
-5. Copy the key and paste it into your `.env.local` file
+1. Visit [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Sign in with your Google account (no credit card required!)
+3. Click **"Create API Key"**
+4. Copy the key and paste it into your `.env.local` file
+
+**FREE Tier Benefits:**
+- ✅ 15 requests per minute
+- ✅ 1 million tokens per day
+- ✅ 1,500 requests per day
+- ✅ No credit card required!
 
 **Important**: Never commit your `.env.local` file to version control. It's already included in `.gitignore`.
 
@@ -69,7 +74,7 @@ npm start
 1. Click the **"New Live Chat"** button in the top-right corner of the dashboard
 2. Enter a user name for the conversation
 3. Click **"Start Chat"** to begin
-4. Type messages and receive real-time responses from OpenAI GPT-4o
+4. Type messages and receive real-time responses from Google Gemini
 5. The supervisor monitors every AI response in real-time
 6. Risk alerts appear automatically when issues are detected
 
@@ -77,7 +82,7 @@ npm start
 
 The supervisor engine evaluates each AI response using the same logic as simulated chats:
 
-1. **User sends a message** → Forwarded to OpenAI GPT-4o
+1. **User sends a message** → Forwarded to Google Gemini
 2. **AI streams response** → Displayed in real-time
 3. **Supervisor evaluates** → Runs `evaluateResponse()` on completion
 4. **Risk detection** → Alerts appear for sentiment issues or hallucinations
@@ -85,25 +90,35 @@ The supervisor engine evaluates each AI response using the same logic as simulat
 
 ### Cost Considerations
 
-- OpenAI charges per token (input + output)
-- GPT-4o pricing: ~$5 per 1M input tokens, ~$15 per 1M output tokens
-- Typical conversation: 100-500 tokens per message
-- Estimated cost: $0.001-0.01 per message exchange
-- **Recommendation**: Set usage limits in your OpenAI account settings
+**Using Google Gemini FREE Tier:**
+- ✅ **Completely FREE** for up to 15 requests/minute
+- ✅ 1 million tokens per day (plenty for testing and demos!)
+- ✅ 1,500 requests per day
+- ✅ No credit card required
+
+**Gemini Pricing (if you exceed free tier):**
+- Gemini 1.5 Flash: $0.35 per 1M input tokens, $1.05 per 1M output tokens
+- Still significantly cheaper than GPT-4o!
+
+**Why Gemini?**
+- **Free Tier:** Perfect for development and testing
+- **Fast:** Optimized for speed with Flash model
+- **Reliable:** Google Cloud infrastructure
+- **Easy Setup:** Get API key in 30 seconds
 
 ### Development vs Production Setup
 
 **Development:**
-- Use your personal OpenAI API key
-- Test with small conversations
-- Monitor usage in OpenAI dashboard
+- Use free Gemini API key
+- Test with unlimited conversations (within free tier limits)
+- No need to monitor costs
 
 **Production:**
 - Use organization API keys
-- Implement rate limiting
+- Implement rate limiting if exceeding 15 req/min
 - Add conversation persistence (database)
-- Monitor costs and usage metrics
-- Consider caching for repeated queries
+- Monitor usage in Google AI Studio
+- Consider upgrading to pay-as-you-go if needed
 
 ## Project Structure
 
@@ -112,7 +127,7 @@ src/
 ├── app/
 │   ├── api/
 │   │   └── chat/
-│   │       └── route.ts       # OpenAI API endpoint
+│   │       └── route.ts       # Google Gemini API endpoint
 │   ├── layout.tsx             # Root layout with metadata
 │   ├── page.tsx               # Main page
 │   └── globals.css            # Global styles

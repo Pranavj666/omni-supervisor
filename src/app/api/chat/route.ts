@@ -1,4 +1,4 @@
-import { openai } from '@ai-sdk/openai';
+import { google } from '@ai-sdk/google';
 import { streamText } from 'ai';
 
 // Maximum duration for streaming (required for Vercel deployment)
@@ -23,9 +23,9 @@ Be helpful, friendly, and professional in your responses.`;
 export async function POST(req: Request) {
   try {
     // Validate API key exists
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
       return new Response(
-        JSON.stringify({ error: 'OpenAI API key not configured' }),
+        JSON.stringify({ error: 'Google API key not configured' }),
         { 
           status: 500,
           headers: { 'Content-Type': 'application/json' }
@@ -35,9 +35,9 @@ export async function POST(req: Request) {
 
     const { messages } = await req.json();
 
-    // Stream response from OpenAI GPT-4o
+    // Stream response from Google Gemini
     const result = streamText({
-      model: openai('gpt-4o'),
+      model: google('gemini-1.5-flash'),
       system: SYSTEM_PROMPT,
       messages,
     });
