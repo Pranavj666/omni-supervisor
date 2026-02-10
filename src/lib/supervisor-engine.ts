@@ -43,13 +43,13 @@ export function evaluateResponse(
     }
   }
 
-  // Alternative refund day patterns
-  const returnDayMatches = botResponseLower.match(/return.*within (\d+) days/);
-  if (returnDayMatches && !hallucination) {
-    const days = parseInt(returnDayMatches[1]);
+  // Alternative refund day patterns (e.g., "return items within X days")
+  const refundDayPatternMatches = botResponseLower.match(/return.*within (\d+) days/);
+  if (refundDayPatternMatches && !hallucination) {
+    const days = parseInt(refundDayPatternMatches[1]);
     if (days !== kb.policies.refund.days) {
       hallucination = true;
-      reason = `Incorrect return policy: Bot stated ${days} days, but policy is ${kb.policies.refund.days} days`;
+      reason = `Incorrect refund policy: Bot stated ${days} days, but policy is ${kb.policies.refund.days} days`;
     }
   }
 

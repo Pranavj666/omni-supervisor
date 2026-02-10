@@ -52,7 +52,6 @@ function generateConversation(userName: string, userId: string): Chat {
 
   for (let i = 0; i < messageCount; i++) {
     // User message
-    const isFirstMessage = i === 0;
     const shouldBeFrustrated = Math.random() > 0.4; // 60% chance of frustration
     
     const userQuery = shouldBeFrustrated 
