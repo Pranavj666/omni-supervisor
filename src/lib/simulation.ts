@@ -60,6 +60,7 @@ function generateConversation(userName: string, userId: string): Chat {
 
     const userMessage: Message = {
       id: `msg-${userId}-${i * 2}`,
+      role: 'user',
       sender: 'user',
       content: userQuery,
       timestamp: new Date(Date.now() - (messageCount - i) * 120000), // 2 minutes apart
@@ -78,6 +79,7 @@ function generateConversation(userName: string, userId: string): Chat {
 
     const botMessage: Message = {
       id: `msg-${userId}-${i * 2 + 1}`,
+      role: 'assistant',
       sender: 'bot',
       content: botResponse,
       timestamp: new Date(Date.now() - (messageCount - i) * 120000 + 30000), // 30 seconds after user

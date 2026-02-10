@@ -2,7 +2,7 @@
 
 import { useChatStore } from '@/store/chat-store';
 import { AlertBadge } from './alert-badge';
-import { Clock, User } from 'lucide-react';
+import { Clock, User, Radio } from 'lucide-react';
 import { Chat } from '@/lib/types';
 
 function formatTimestamp(date: Date): string {
@@ -52,8 +52,17 @@ export function ChatList() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-gray-500" />
+                    {chat.isLive ? (
+                      <Radio className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <User className="w-4 h-4 text-gray-500" />
+                    )}
                     <span className="font-semibold text-gray-900">{chat.userName}</span>
+                    {chat.isLive && (
+                      <span className="inline-block px-2 py-0.5 text-xs font-semibold text-green-800 bg-green-100 rounded">
+                        LIVE
+                      </span>
+                    )}
                   </div>
                   <AlertBadge riskLevel={chat.riskLevel} />
                 </div>

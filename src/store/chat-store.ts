@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Chat, Message } from '@/lib/types';
+import { Chat, Message, RiskLevel } from '@/lib/types';
 
 interface ChatStore {
   chats: Chat[];
@@ -12,6 +12,8 @@ interface ChatStore {
   selectChat: (chatId: string) => void;
   takeOverChat: (chatId: string) => void;
   setChats: (chats: Chat[]) => void;
+  createLiveChat: (userName: string) => string;
+  updateChatRisk: (chatId: string, riskLevel: RiskLevel, reason: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -64,5 +66,43 @@ export const useChatStore = create<ChatStore>((set) => ({
     set(() => ({
       chats,
       selectedChatId: chats.length > 0 ? chats[0].id : null,
+    })),
+
+  createLiveChat: (userName) => {
+    // Use crypto.randomUUID for better uniqueness
+    const randomId = typeof crypto !== 'undefined' && crypto.randomUUID 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2, 11);
+    const chatId = `live-${Date.now()}-${randomId}`;
+    const newChat: Chat = {
+      id: chatId,
+      userId: `user-${Date.now()}`,
+      userName,
+      status: 'active',
+      riskLevel: 'SAFE',
+      messages: [],
+      lastUpdated: new Date(),
+      isLive: true,
+    };
+    
+    set((state) => ({
+      chats: [...state.chats, newChat],
+      selectedChatId: chatId,
+    }));
+    
+    return chatId;
+  },
+
+  updateChatRisk: (chatId, riskLevel, reason) =>
+    set((state) => ({
+      chats: state.chats.map((chat) =>
+        chat.id === chatId
+          ? {
+              ...chat,
+              riskLevel,
+              lastUpdated: new Date(),
+            }
+          : chat
+      ),
     })),
 }));
