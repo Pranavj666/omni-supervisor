@@ -1,0 +1,44 @@
+{
+  "policies": {
+    "refund": {
+      "days": 30,
+      "conditions": [
+        "Items must be unused and in original packaging",
+        "Receipt or proof of purchase required"
+      ],
+      "exceptions": [
+        "Digital products are non-refundable",
+        "Customized items cannot be returned"
+      ]
+    },
+    "shipping": {
+      "freeThreshold": 50,
+      "standard": "3-5 business days",
+      "expressCost": 15
+    },
+    "return": {
+      "days": 30,
+      "conditions": [
+        "Original packaging required",
+        "Free return shipping for defective items"
+      ]
+    }
+  },
+  "products": [
+    {
+      "name": "Wireless Headphones",
+      "price": 79.99,
+      "available": true
+    },
+    {
+      "name": "Smart Watch",
+      "price": 199.99,
+      "available": true
+    },
+    {
+      "name": "Laptop Stand",
+      "price": 45,
+      "available": false
+    }
+  ]
+}
