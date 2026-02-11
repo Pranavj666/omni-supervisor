@@ -81,8 +81,10 @@ export async function POST(req: Request) {
           for await (const chunk of result.stream) {
             const text = chunk.text();
             // Format as Vercel AI SDK data stream protocol
-            // The protocol uses lines prefixed with data types
-            const dataChunk = `0:"${text.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`;
+            // The protocol uses lines in format: 0:"text"\n
+            // Escape quotes and newlines in the text
+            const escapedText = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+            const dataChunk = `0:"${escapedText}"\n`;
             controller.enqueue(encoder.encode(dataChunk));
           }
           controller.close();
@@ -96,7 +98,7 @@ export async function POST(req: Request) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
+        'x-vercel-ai-data-stream': 'v1',
       },
     });
   } catch (error) {
