@@ -59,7 +59,7 @@ export async function POST(req: Request) {
     // Convert messages to Google's format
     // Skip the last message as it will be sent separately
     const history = messages.slice(0, -1).map((msg: Message) => ({
-      role: msg.role === 'user' ? 'user' : 'model',
+      role: msg.role === 'user' ? 'user' : 'model', // Map 'assistant' or 'model' to 'model'
       parts: [{ text: msg.content }],
     }));
 
@@ -89,7 +89,8 @@ export async function POST(req: Request) {
             const text = chunk.text();
             // Format as Vercel AI SDK data stream protocol
             // Protocol: 0:"text content"\n for text chunks
-            // Use JSON.stringify for proper escaping, then remove quotes
+            // Use JSON.stringify to properly escape special characters (quotes, backslashes, newlines)
+            // then remove the surrounding quotes that JSON.stringify adds
             const escapedText = JSON.stringify(text).slice(1, -1);
             const dataChunk = `0:"${escapedText}"\n`;
             controller.enqueue(encoder.encode(dataChunk));
