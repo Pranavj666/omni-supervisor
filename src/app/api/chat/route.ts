@@ -1,10 +1,7 @@
-import { google } from '@ai-sdk/google';
-import { streamText } from 'ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Maximum duration for streaming (required for Vercel deployment)
 export const maxDuration = 30;
 
-// System prompt with company policies
 const SYSTEM_PROMPT = `You are a helpful customer service AI assistant for an e-commerce company.
 
 Company Policies (Ground Truth):
@@ -22,36 +19,76 @@ Be helpful, friendly, and professional in your responses.`;
 
 export async function POST(req: Request) {
   try {
-    // Validate API key exists
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+    const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'Google API key not configured' }),
-        { 
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { status: 500, headers: { 'Content-Type': 'application/json' } }
       );
     }
 
     const { messages } = await req.json();
 
-    // Stream response from Google Gemini
-    const result = streamText({
-      model: google('gemini-1.5-flash'),
-      system: SYSTEM_PROMPT,
-      messages,
+    // Initialize with CORRECT model name
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+    // Convert messages to Google's format
+    const history = messages.slice(0, -1).map((msg: any) => ({
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text: msg.content }],
+    }));
+
+    const chat = model.startChat({
+      history: [
+        {
+          role: 'user',
+          parts: [{ text: SYSTEM_PROMPT }],
+        },
+        {
+          role: 'model',
+          parts: [{ text: 'I understand. I will act as a helpful customer service AI assistant following the company policies you provided, and occasionally make subtle policy errors for testing purposes.' }],
+        },
+        ...history,
+      ],
+      generationConfig: {
+        maxOutputTokens: 1000,
+        temperature: 0.7,
+      },
     });
 
-    // Return streaming response
-    return result.toDataStreamResponse();
+    const lastMessage = messages[messages.length - 1];
+    const result = await chat.sendMessageStream(lastMessage.content);
+
+    // Stream response compatible with Vercel AI SDK
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          for await (const chunk of result.stream) {
+            const text = chunk.text();
+            const dataChunk = `0:"${text.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`;
+            controller.enqueue(encoder.encode(dataChunk));
+          }
+          controller.close();
+        } catch (error) {
+          console.error('Streaming error:', error);
+          controller.error(error);
+        }
+      },
+    });
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+      },
+    });
   } catch (error) {
     console.error('Error in chat API:', error);
     return new Response(
       JSON.stringify({ error: 'Failed to process chat request' }),
-      { 
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
 }
