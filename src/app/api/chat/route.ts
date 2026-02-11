@@ -67,7 +67,7 @@ export async function POST(req: Request) {
         try {
           for await (const chunk of result.stream) {
             const text = chunk.text();
-            const dataChunk = `0:"${text.replace(/"/g, '\\"').replace(/\n/g, '\\n')}"\n`;
+            const dataChunk = `0:${JSON.stringify(text)}\n`;
             controller.enqueue(encoder.encode(dataChunk));
           }
           controller.close();
