@@ -45,7 +45,10 @@ export async function POST(req: Request) {
 
     // Initialize Google Generative AI with WORKING model name
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ 
+      model: 'gemini-pro',
+      systemInstruction: SYSTEM_PROMPT,
+    });
 
     // Convert messages to Google's format
     // Skip the last message as it will be sent separately
@@ -54,19 +57,9 @@ export async function POST(req: Request) {
       parts: [{ text: msg.content }],
     }));
 
-    // Start chat with system prompt and conversation history
+    // Start chat with conversation history
     const chat = model.startChat({
-      history: [
-        {
-          role: 'user',
-          parts: [{ text: SYSTEM_PROMPT }],
-        },
-        {
-          role: 'model',
-          parts: [{ text: 'I understand. I will act as a helpful customer service AI assistant following the company policies you provided, and occasionally make subtle policy errors for testing purposes.' }],
-        },
-        ...history,
-      ],
+      history,
       generationConfig: {
         maxOutputTokens: 1000,
         temperature: 0.7,
@@ -90,7 +83,8 @@ export async function POST(req: Request) {
             const text = chunk.text();
             // Format as Vercel AI SDK data stream protocol
             // Protocol: 0:"text content"\n for text chunks
-            const escapedText = text.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
+            // Use JSON.stringify for proper escaping, then remove quotes
+            const escapedText = JSON.stringify(text).slice(1, -1);
             const dataChunk = `0:"${escapedText}"\n`;
             controller.enqueue(encoder.encode(dataChunk));
           }
