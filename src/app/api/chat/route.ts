@@ -27,17 +27,11 @@ Be helpful, friendly, and professional in your responses.`;
 
 export async function POST(req: Request) {
   try {
-    // Validate API key exists
+    // Validate API key exists - NO NEXT_PUBLIC_ prefix (server-side only)
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    
     if (!apiKey) {
-      console.error('GOOGLE_GENERATIVE_AI_API_KEY is not configured');
-      return new Response(
-        JSON.stringify({ error: 'Google API key not configured' }),
-        { 
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
+      throw new Error('Missing API Key: GOOGLE_GENERATIVE_AI_API_KEY is not defined in environment variables');
     }
 
     const { messages } = await req.json();
@@ -49,7 +43,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Initialize Google Generative AI with WORKING model name
+    // Initialize Google Generative AI
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ 
       model: 'gemini-pro',
@@ -57,9 +51,8 @@ export async function POST(req: Request) {
     });
 
     // Convert messages to Google's format
-    // Skip the last message as it will be sent separately
     const history = messages.slice(0, -1).map((msg: Message) => ({
-      role: msg.role === 'user' ? 'user' : 'model', // Map 'assistant' or 'model' to 'model'
+      role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
 
@@ -80,19 +73,15 @@ export async function POST(req: Request) {
     const result = await chat.sendMessageStream(userMessage);
 
     // Create streaming response compatible with Vercel AI SDK format
-    // The frontend uses useChat hook which expects the data stream protocol
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
           for await (const chunk of result.stream) {
             const text = chunk.text();
-            // Format as Vercel AI SDK data stream protocol
-            // Protocol: 0:"text content"\n for text chunks
-            // Use JSON.stringify to properly escape special characters (quotes, backslashes, newlines)
-            // then remove the surrounding quotes that JSON.stringify adds
             const escapedText = JSON.stringify(text).slice(1, -1);
-            const dataChunk = `0:"${escapedText}"\n`;
+            const dataChunk = `0:"${escapedText}"
+`;
             controller.enqueue(encoder.encode(dataChunk));
           }
           controller.close();
@@ -112,7 +101,7 @@ export async function POST(req: Request) {
     console.error('Error in chat API:', error);
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to process chat request',
+        error: error instanceof Error ? error.message : 'Failed to process chat request',
         details: error instanceof Error ? error.message : 'Unknown error'
       }),
       { 
