@@ -3,6 +3,12 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 // Maximum duration for streaming (required for Vercel deployment)
 export const maxDuration = 30;
 
+// Message interface for type safety
+interface Message {
+  role: string;
+  content: string;
+}
+
 // System prompt with company policies
 const SYSTEM_PROMPT = `You are a helpful customer service AI assistant for an e-commerce company.
 
@@ -52,7 +58,7 @@ export async function POST(req: Request) {
 
     // Convert messages to Google's format
     // Skip the last message as it will be sent separately
-    const history = messages.slice(0, -1).map((msg: any) => ({
+    const history = messages.slice(0, -1).map((msg: Message) => ({
       role: msg.role === 'user' ? 'user' : 'model',
       parts: [{ text: msg.content }],
     }));
@@ -99,7 +105,6 @@ export async function POST(req: Request) {
     return new Response(stream, {
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
-        'Transfer-Encoding': 'chunked',
       },
     });
   } catch (error) {
